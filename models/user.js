@@ -41,6 +41,32 @@ module.exports = function(sequelize, DataTypes){
 				}
 			}
 		},
+		classMethods: {
+			authenticate: function(body){
+				var _this = this;
+
+				return new Promise(function(resolve, reject){
+					if(typeof body.email !== 'string' || typeof body.password !== 'string'){
+				        return reject();
+				    }
+
+					console.log(_this);
+				    _this.findOne({
+				        where: {
+				            email: body.email
+				        }
+				    }).then(function(user){
+				        if(!user || !bcrypt.compareSync(body.password, user.get('password_hash'))){
+				            return reject();
+				        }
+
+				        resolve(user);
+				    }, function(err){
+				        return reject();
+				    });
+				});
+			}
+		},
 		instanceMethods: {
 			toPublicJSON: function(){
 				var json = this.toJSON();
@@ -48,4 +74,6 @@ module.exports = function(sequelize, DataTypes){
 			}
 		}
 	});
+
+	// return user;
 };
