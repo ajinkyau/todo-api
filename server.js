@@ -104,7 +104,6 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res){
     var todoId = parseInt(req.params.id, 10);
     var body = _.pick(req.body, 'description', 'completed');
     var attributes = {};
-    var 
 
     if (body.hasOwnProperty('completed')){
         attributes.completed = body.completed;
