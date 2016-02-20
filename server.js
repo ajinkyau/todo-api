@@ -23,7 +23,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res){
     var query = req.query;
     var where = {
         userId: req.user.get('id')
-    };     // where req.user.get('id')
+    };
 
 
     if(query.hasOwnProperty('completed')  && query.completed === 'true') {
@@ -148,17 +148,28 @@ app.post('/users', function(req, res){
 // POST /users/login
 app.post('/users/login', function(req, res){
     var body = _.pick(req.body, 'email', 'password');
+    var userInstance;
 
     db.user.authenticate(body).then(function(user){
         var token = user.generateToken('authentication');
+        userInstance = user;
 
-        if(token){
-            return res.header('Auth', token).json(user.toPublicJSON()); 
-        } else {
-            res.status(401).send();    
-        }
-    }, function(){
+        return db.token.create({
+            token: token
+        });
+
+    }).then(function(tokenInstance){
+        res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+    }).catch(function(){
         res.status(401).send();
+    });
+});
+
+app.delete('/users/login', middleware.requireAuthentication, function(req, res){
+    req.token.destroy().then(function(){
+        res.status(204).send();
+    }).catch(function(){
+        res.status(500).send();
     });
 });
 

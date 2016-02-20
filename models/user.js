@@ -4,7 +4,7 @@ var crypto = require('crypto-js');
 var jwt = require('jsonwebtoken');
 
 module.exports = function(sequelize, DataTypes){
-	return sequelize.define('user', {
+	var user = sequelize.define('user', {
 		email: {
 			type: DataTypes.STRING,
 			allowNull: false,
@@ -45,15 +45,13 @@ module.exports = function(sequelize, DataTypes){
 		},
 		classMethods: {
 			authenticate: function(body){
-				var _this = this;
-
+				
 				return new Promise(function(resolve, reject){
 					if(typeof body.email !== 'string' || typeof body.password !== 'string'){
 				        return reject();
 				    }
 
-					console.log(_this);
-				    _this.findOne({
+				    user.findOne({
 				        where: {
 				            email: body.email
 				        }
@@ -69,15 +67,14 @@ module.exports = function(sequelize, DataTypes){
 				});
 			},
 			findByToken: function(token){
-				var _this = this;
-
+				
 				return new Promise(function(resolve, reject){
 					try{
 						var decodedJWT = jwt.verify(token, 'qwerty09');
 						var bytes = crypto.AES.decrypt(decodedJWT.token, 'qwerty@12ui');
 						var tokenData = JSON.parse(bytes.toString(crypto.enc.Utf8));
 
-						_this.findById(tokenData.id).then(function(user){
+						user.findById(tokenData.id).then(function(user){
 							if(user){
 								resolve(user);
 							} else {
@@ -120,5 +117,5 @@ module.exports = function(sequelize, DataTypes){
 		}
 	});
 
-	// return user;
+	return user;
 };
